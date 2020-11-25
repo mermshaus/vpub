@@ -1,0 +1,13 @@
+{
+    "require": {
+        "php": ">=7.4",
+        "ext-json": "*",
+        "symfony/console": "^5.1",
+        "symfony/finder": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "merms\\vpub\\": "src/"
+        }
+    }
+}
