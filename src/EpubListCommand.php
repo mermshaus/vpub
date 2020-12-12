@@ -36,6 +36,8 @@ final class EpubListCommand extends Command
 
         $epubFiles = $this->epubService->findEpubFilesInDirectory($argDirectory);
 
+        $entries = [];
+
         foreach ($epubFiles as $epubFile) {
             /** @var \SplFileInfo $epubFile */
             $filepath = $epubFile->getPathname();
@@ -51,29 +53,36 @@ final class EpubListCommand extends Command
                 continue;
             }
 
-            $data = $record->getData();
+            $entries[] = $this->formatEntry($record);
+        }
 
-            $annotationAuthor = $data->hasValue('epub.author') ? $data->getValue('epub.author') : 'No author';
-            $annotationTitle  = $data->hasValue('epub.title') ? $data->getValue('epub.title') : 'No title';
+        sort($entries);
 
-            $output->write(sprintf('%s: %s', $annotationAuthor, $annotationTitle));
-
-            if ($data->hasValue('epub.series')) {
-                $annotationSeries = $data->hasValue('epub.series') ? $data->getValue('epub.series') : 'No series';
-                $annotationNumber = $data->hasValue('epub.number') ? $data->getValue('epub.number') : 'No number';
-
-                $output->write(sprintf(' (%s, #%s)', $annotationSeries, $annotationNumber));
-            }
-
-            $output->writeln('');
-
-            $annotations = $data->getAll();
-
-            foreach ($annotations as $key => $value) {
-                $output->writeln(sprintf('        %s: %s', $key, $value));
-            }
+        foreach ($entries as $entry) {
+            $output->writeln($entry);
         }
 
         return Command::SUCCESS;
+    }
+
+    private function formatEntry(Record $record): string
+    {
+        $ret = '';
+
+        $data = $record->getData();
+
+        $annotationAuthor = $data->hasValue('epub.author') ? $data->getValue('epub.author') : 'No author';
+        $annotationTitle  = $data->hasValue('epub.title') ? $data->getValue('epub.title') : 'No title';
+
+        $ret .= sprintf('%s: %s', $annotationAuthor, $annotationTitle);
+
+        if ($data->hasValue('epub.series')) {
+            $annotationSeries = $data->hasValue('epub.series') ? $data->getValue('epub.series') : 'No series';
+            $annotationNumber = $data->hasValue('epub.number') ? $data->getValue('epub.number') : 'No number';
+
+            $ret .= sprintf(' (%s, #%s)', $annotationSeries, $annotationNumber);
+        }
+
+        return $ret;
     }
 }

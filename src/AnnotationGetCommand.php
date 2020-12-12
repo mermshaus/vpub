@@ -14,12 +14,14 @@ final class AnnotationGetCommand extends Command
     protected static $defaultName = 'annotation:get';
 
     private AnnotationService $annotationService;
+    private CacheService $cacheService;
 
-    public function __construct(AnnotationService $annotationService)
+    public function __construct(AnnotationService $annotationService, CacheService $cacheService)
     {
         parent::__construct();
 
         $this->annotationService = $annotationService;
+        $this->cacheService      = $cacheService;
     }
 
     protected function configure()
@@ -33,7 +35,13 @@ final class AnnotationGetCommand extends Command
         $argFilepath = $input->getArgument('filepath');
         $argKey      = $input->getArgument('key');
 
-        $checksum = hash_file('sha256', $argFilepath);
+        $filepath = realpath($argFilepath);
+
+        if ($filepath === false) {
+            throw new \RuntimeException(sprintf('Invalid filepath: "%s"', $filepath));
+        }
+
+        $checksum = $this->cacheService->getSha256Sum($filepath);
 
         $record = $this->annotationService->findRecord($checksum);
 
