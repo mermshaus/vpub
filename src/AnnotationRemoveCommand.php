@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace merms\vpub;
 
+use merms\anno\apisdk\ApiSdk;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,13 +14,16 @@ final class AnnotationRemoveCommand extends Command
 {
     protected static $defaultName = 'annotation:remove';
 
-    private AnnotationService $annotationService;
+    private ApiSdk $apiSdk;
 
-    public function __construct(AnnotationService $annotationService)
+    private CacheService $cacheService;
+
+    public function __construct(ApiSdk $apiSdk, CacheService $cacheService)
     {
         parent::__construct();
 
-        $this->annotationService = $annotationService;
+        $this->apiSdk       = $apiSdk;
+        $this->cacheService = $cacheService;
     }
 
     protected function configure()
@@ -33,13 +37,13 @@ final class AnnotationRemoveCommand extends Command
         $argFilepath = $input->getArgument('filepath');
         $argKey      = $input->getArgument('key');
 
-        $checksum = hash_file('sha256', $argFilepath);
+        $checksum = $this->cacheService->getSha256Sum($argFilepath);
 
-        $record = $this->annotationService->findRecord($checksum);
+        $annotations = $this->apiSdk->getAnnotations($checksum);
 
-        $record->getData()->deleteValue($argKey);
+        unset($annotations[$argKey]);
 
-        $this->annotationService->saveRecord($record);
+        $this->apiSdk->setAnnotations($checksum, $annotations);
 
         return Command::SUCCESS;
     }

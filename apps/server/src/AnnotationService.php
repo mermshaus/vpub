@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace merms\vpub;
+namespace merms\anno\server;
 
 final class AnnotationService
 {
@@ -16,6 +16,14 @@ final class AnnotationService
     public function findRecord(string $checksum): ?Record
     {
         return $this->annotationStore->findRecord($checksum);
+    }
+
+    /**
+     * @return Record[]
+     */
+    public function findAllRecords(): array
+    {
+        return $this->annotationStore->findAllRecords();
     }
 
     public function saveRecord(Record $record): void

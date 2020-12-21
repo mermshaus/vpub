@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace merms\vpub;
 
+use merms\anno\apisdk\ApiSdk;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,14 +16,17 @@ final class EpubListCommand extends Command
 
     private EpubService $epubService;
 
-    private AnnotationService $annotationService;
+    private ApiSdk $apiSdk;
 
-    public function __construct(EpubService $epubService, AnnotationService $annotationService)
+    private CacheService $cacheService;
+
+    public function __construct(EpubService $epubService, ApiSdk $apiSdk, CacheService $cacheService)
     {
         parent::__construct();
 
-        $this->epubService       = $epubService;
-        $this->annotationService = $annotationService;
+        $this->epubService  = $epubService;
+        $this->apiSdk       = $apiSdk;
+        $this->cacheService = $cacheService;
     }
 
     protected function configure()
@@ -43,17 +47,17 @@ final class EpubListCommand extends Command
             $filepath = $epubFile->getPathname();
             $filename = $epubFile->getFilename();
 
-            $checksum = hash_file('sha256', $filepath);
+            $checksum = $this->cacheService->getSha256Sum($filepath);
 
-            $record = $this->annotationService->findRecord($checksum);
+            $annotations = $this->apiSdk->getAnnotations($checksum);
 
-            if ($record === null) {
+            if (count($annotations) === 0) {
                 $output->writeln(sprintf('(no metadata) %s', $filename));
 
                 continue;
             }
 
-            $entries[] = $this->formatEntry($record);
+            $entries[] = $this->formatEntry($annotations);
         }
 
         sort($entries);
@@ -65,20 +69,18 @@ final class EpubListCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function formatEntry(Record $record): string
+    private function formatEntry(array $annotations): string
     {
         $ret = '';
 
-        $data = $record->getData();
-
-        $annotationAuthor = $data->hasValue('epub.author') ? $data->getValue('epub.author') : 'No author';
-        $annotationTitle  = $data->hasValue('epub.title') ? $data->getValue('epub.title') : 'No title';
+        $annotationAuthor = isset($annotations['epub.author']) ? $annotations['epub.author'] : 'No author';
+        $annotationTitle  = isset($annotations['epub.title']) ? $annotations['epub.title'] : 'No title';
 
         $ret .= sprintf('%s: %s', $annotationAuthor, $annotationTitle);
 
-        if ($data->hasValue('epub.series')) {
-            $annotationSeries = $data->hasValue('epub.series') ? $data->getValue('epub.series') : 'No series';
-            $annotationNumber = $data->hasValue('epub.number') ? $data->getValue('epub.number') : 'No number';
+        if (isset($annotations['epub.series'])) {
+            $annotationSeries = isset($annotations['epub.series']) ? $annotations['epub.series'] : 'No series';
+            $annotationNumber = isset($annotations['epub.number']) ? $annotations['epub.number'] : 'No number';
 
             $ret .= sprintf(' (%s, #%s)', $annotationSeries, $annotationNumber);
         }

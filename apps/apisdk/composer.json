@@ -1,0 +1,12 @@
+{
+    "name": "merms/anno-apisdk",
+    "version": "0.1.0",
+    "require": {
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "merms\\anno\\apisdk\\": "src/"
+        }
+    }
+}

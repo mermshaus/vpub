@@ -17,6 +17,19 @@ final class CacheService
         }
     }
 
+    public function findFilepath(string $checksum): ?string
+    {
+        $cacheEntries = json_decode(file_get_contents($this->cacheFilepath), true);
+
+        foreach ($cacheEntries as $filepath => $cacheEntryData) {
+            if ($cacheEntryData['sha256sum'] === $checksum) {
+                return $filepath;
+            }
+        }
+
+        return null;
+    }
+
     public function getSha256Sum(string $filepath): string
     {
         $cacheEntries = json_decode(file_get_contents($this->cacheFilepath), true);

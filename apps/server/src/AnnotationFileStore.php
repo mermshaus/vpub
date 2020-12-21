@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace merms\vpub;
+namespace merms\anno\server;
 
 final class AnnotationFileStore implements AnnotationStore
 {
@@ -22,6 +22,22 @@ final class AnnotationFileStore implements AnnotationStore
         }
 
         return Record::createFromJsonArray($checksum, $records[$checksum]);
+    }
+
+    /**
+     * @return Record[]
+     */
+    public function findAllRecords(): array
+    {
+        $records = $this->readData();
+
+        $ret = [];
+
+        foreach ($records as $key => $data) {
+            $ret[] = Record::createFromJsonArray($key, $data);
+        }
+
+        return $ret;
     }
 
     public function saveRecord(Record $record): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace merms\vpub;
 
+use merms\anno\apisdk\ApiSdk;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,15 +14,16 @@ final class AnnotationGetCommand extends Command
 {
     protected static $defaultName = 'annotation:get';
 
-    private AnnotationService $annotationService;
+    private ApiSdk $apiSdk;
+
     private CacheService $cacheService;
 
-    public function __construct(AnnotationService $annotationService, CacheService $cacheService)
+    public function __construct(ApiSdk $apiSdk, CacheService $cacheService)
     {
         parent::__construct();
 
-        $this->annotationService = $annotationService;
-        $this->cacheService      = $cacheService;
+        $this->apiSdk       = $apiSdk;
+        $this->cacheService = $cacheService;
     }
 
     protected function configure()
@@ -43,13 +45,13 @@ final class AnnotationGetCommand extends Command
 
         $checksum = $this->cacheService->getSha256Sum($filepath);
 
-        $record = $this->annotationService->findRecord($checksum);
+        $data = $this->apiSdk->getAnnotations($checksum);
 
-        if ($record === null) {
-            throw new \RuntimeException('Record not found');
+        if (!isset($data[$argKey])) {
+            throw new \RuntimeException('Key not found');
         }
 
-        $value = $record->getData()->getValue($argKey);
+        $value = $data[$argKey];
 
         $output->writeln($value);
 

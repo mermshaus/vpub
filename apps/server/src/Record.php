@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace merms\vpub;
+namespace merms\anno\server;
 
 final class Record
 {

@@ -1,7 +1,14 @@
 {
+    "repositories": [
+        {
+            "type": "path",
+            "url": "apps/apisdk"
+        }
+    ],
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
+        "merms/anno-apisdk": "*",
         "symfony/console": "^5.1",
         "symfony/finder": "^5.1"
     },
