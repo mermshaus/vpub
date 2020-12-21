@@ -1,5 +1,5 @@
 /.idea
-/vendor
 /data.json
 /apps/apisdk/vendor
 /apps/server/vendor
+/apps/vpub/vendor
