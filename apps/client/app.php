@@ -2,7 +2,7 @@
 <?php
 declare(strict_types=1);
 
-namespace merms\vpub;
+namespace merms\anno\client;
 
 use merms\anno\apisdk\ApiSdk;
 use merms\anno\checksum_cache\CacheService;
@@ -18,10 +18,11 @@ if (!is_dir($storageDir)) {
 
 $apiSdk       = new ApiSdk('http://localhost:8080/');
 $cacheService = new CacheService($storageDir . '/cache.json');
-$epubService  = new EpubService();
 
 $application = new Application();
 
-$application->add(new EpubListCommand($epubService, $apiSdk, $cacheService));
+$application->add(new AnnotationGetCommand($apiSdk, $cacheService));
+$application->add(new AnnotationRemoveCommand($apiSdk, $cacheService));
+$application->add(new AnnotationSetCommand($apiSdk, $cacheService));
 
 $application->run();

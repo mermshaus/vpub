@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
-namespace merms\vpub;
+namespace merms\anno\client;
 
 use merms\anno\apisdk\ApiSdk;
+use merms\anno\checksum_cache\CacheService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class AnnotationRemoveCommand extends Command
+final class AnnotationGetCommand extends Command
 {
-    protected static $defaultName = 'annotation:remove';
+    protected static $defaultName = 'annotation:get';
 
     private ApiSdk $apiSdk;
 
@@ -37,13 +38,23 @@ final class AnnotationRemoveCommand extends Command
         $argFilepath = $input->getArgument('filepath');
         $argKey      = $input->getArgument('key');
 
-        $checksum = $this->cacheService->getSha256Sum($argFilepath);
+        $filepath = realpath($argFilepath);
 
-        $annotations = $this->apiSdk->getAnnotations($checksum);
+        if ($filepath === false) {
+            throw new \RuntimeException(sprintf('Invalid filepath: "%s"', $filepath));
+        }
 
-        unset($annotations[$argKey]);
+        $checksum = $this->cacheService->getSha256Sum($filepath);
 
-        $this->apiSdk->setAnnotations($checksum, $annotations);
+        $data = $this->apiSdk->getAnnotations($checksum);
+
+        if (!isset($data[$argKey])) {
+            throw new \RuntimeException('Key not found');
+        }
+
+        $value = $data[$argKey];
+
+        $output->writeln($value);
 
         return Command::SUCCESS;
     }

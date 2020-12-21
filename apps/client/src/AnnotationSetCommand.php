@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace merms\vpub;
+namespace merms\anno\client;
 
 use merms\anno\apisdk\ApiSdk;
+use merms\anno\checksum_cache\CacheService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

@@ -1,5 +1,6 @@
 /.idea
 /data.json
-/library/apisdk/vendor
-/apps/server/vendor
-/apps/vpub/vendor
+/library/*/vendor
+/library/*/composer.lock
+/apps/*/vendor
+/apps/*/composer.lock

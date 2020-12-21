@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "merms\\vpub\\": "src/"
+            "merms\\anno\\client\\": "src/"
         }
     }
 }
