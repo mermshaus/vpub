@@ -2,7 +2,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../../apps/apisdk"
+            "url": "../../library/apisdk"
         }
     ],
     "require": {

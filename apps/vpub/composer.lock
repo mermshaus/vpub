@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "059c25a8ae662fba76987cdcb4f64d38",
+    "content-hash": "582dc79e1c2b333907be1f1a7b508321",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -243,7 +243,7 @@
             "version": "0.1.0",
             "dist": {
                 "type": "path",
-                "url": "../../apps/apisdk",
+                "url": "../../library/apisdk",
                 "reference": "af56e728273a802498559088d35bf0f35784ec64"
             },
             "require": {
