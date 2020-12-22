@@ -59,6 +59,19 @@ switch ($routeInfo[0]) {
 
             $class = new AnnotationsSet();
             $class->execute($data['parameters']['sha256sum'], $data['parameters']['annotations']);
+        } elseif ($data['method'] === 'annotation.add') {
+            if ($httpMethod !== 'POST') {
+                throw new \RuntimeException('POST request expected');
+            }
+
+            $class  = new AnnotationAdd();
+            $record = $class->execute(
+                $data['parameters']['sha256sum'],
+                $data['parameters']['key'],
+                $data['parameters']['value'],
+            );
+
+            echo json_encode($record->toJsonArray());
         } elseif ($data['method'] === 'checksums.get-by-key-and-value') {
             if ($httpMethod !== 'GET') {
                 throw new \RuntimeException('GET request expected');
@@ -66,6 +79,15 @@ switch ($routeInfo[0]) {
 
             $class = new ChecksumsGetByKeyAndValue();
             echo json_encode($class->execute($data['parameters']['key'], $data['parameters']['value']));
+        } elseif ($data['method'] === 'record.get') {
+            if ($httpMethod !== 'GET') {
+                throw new \RuntimeException('GET request expected');
+            }
+
+            $class  = new RecordGet();
+            $record = $class->execute($data['parameters']['sha256sum']);
+
+            echo json_encode($record->toJsonArray());
         }
 
         // ... call $handler with $vars

@@ -15,6 +15,23 @@ final class ApiSdk
         $this->baseUri = $baseUri;
     }
 
+    /**
+     * @param mixed $value
+     */
+    public function addAnnotation(string $sha256sum, string $key, $value): array
+    {
+        $client = $this->getClient();
+
+        $bodyString = json_encode([
+            'method'     => 'annotation.add',
+            'parameters' => ['sha256sum' => $sha256sum, 'key' => $key, 'value' => $value],
+        ]);
+
+        $response = $client->request('POST', '/', ['body' => $bodyString]);
+
+        return json_decode($response->getBody()->getContents(), true);
+    }
+
     public function getAnnotations(string $sha256sum): array
     {
         $client = $this->getClient();
@@ -37,6 +54,17 @@ final class ApiSdk
             'method'     => 'checksums.get-by-key-and-value',
             'parameters' => ['key' => $key, 'value' => $value],
         ]);
+
+        $response = $client->request('GET', '/', ['body' => $bodyString]);
+
+        return json_decode($response->getBody()->getContents(), true);
+    }
+
+    public function getRecord(string $sha256sum): array
+    {
+        $client = $this->getClient();
+
+        $bodyString = json_encode(['method' => 'record.get', 'parameters' => ['sha256sum' => $sha256sum]]);
 
         $response = $client->request('GET', '/', ['body' => $bodyString]);
 

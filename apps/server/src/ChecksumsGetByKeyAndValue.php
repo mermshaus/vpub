@@ -17,7 +17,17 @@ final class ChecksumsGetByKeyAndValue
 
         $recordsFiltered = array_filter($records, function (Record $record) use ($key, $value) {
             if ($record->getData()->hasValue($key)) {
-                return $record->getData()->getValue($key) === $value;
+                $entry = $record->getData()->getValue($key);
+
+                if (!is_array($entry)) {
+                    return $record->getData()->getValue($key) === $value;
+                }
+
+                foreach ($entry as $entryValue) {
+                    if ($entryValue === $value) {
+                        return true;
+                    }
+                }
             }
 
             return false;
