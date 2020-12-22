@@ -18,8 +18,8 @@ tag it with `dog` and `spain` and maybe `vacation 2019`. You could use a
 specific metadata format like Exif and add the metadata directly to the file.
 You could also use a photo collection software that allows you to import images
 and to add metadata in a way that’s managed by and probably specific to the
-application. Or you could use a generic solution that let’s you annotate a
-file’s content (instead of eg. connecting the metadata to a location in the file
+application. Or you could use a generic solution that lets you annotate a file’s
+content (instead of eg. connecting the metadata to a location in the file
 system) with arbitrary metadata without touching the file itself.
 
 If the last option sounds good to you, this project might be for you.
