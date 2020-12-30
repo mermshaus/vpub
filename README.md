@@ -1,9 +1,9 @@
 # Annotation Suite
 
-_(…it’s a working title)_
+_(working title)_
 
 A suite of tools to build and utilize a database of metadata connected to file
-contents using hashes of the content for identification and a HTTP API for
+contents. Content hashes are used for identification and a HTTP API for
 communication.
 
 ## Introduction
@@ -54,5 +54,28 @@ SQLite).
 
 Please remember that all parts of the project are in prototype state. So don’t
 expect anything to be ready for real use. You can build simple things with it (I
-actually do), but don’t expect too much. Have fun experimenting with stuff. I’d
-love to hear from you.
+actually do), but don’t expect too much. Just have fun experimenting.
+
+If you build something cool, I’d love to hear from you!
+
+## Ideas
+
+**A script to open a gallery of all files with a given tag in Gnome’s image
+viewer (eog)**
+
+```bash
+#!/usr/bin/env bash
+
+set -eu
+
+key="$1"
+value="$2"
+
+files=""
+
+while IFS= read -r line; do
+    files="$files ${line@Q}"
+done <<< "$(/absolute/path/to/client/app.php c:g $key $value)"
+
+eval "eog $files"
+```
