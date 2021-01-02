@@ -58,24 +58,11 @@ actually do), but don’t expect too much. Just have fun experimenting.
 
 If you build something cool, I’d love to hear from you!
 
-## Ideas
+## Experiments
 
-**A script to open a gallery of all files with a given tag in Gnome’s image
-viewer (eog)**
+Small demo tools that can be found in the `scripts` directory.
 
-```bash
-#!/usr/bin/env bash
+- `open_with_eog.sh <key> <value>` – A script to open a gallery of all annotated
+  files with a given key/value pair in Gnome’s image viewer ([eog]).
 
-set -eu
-
-key="$1"
-value="$2"
-
-files=""
-
-while IFS= read -r line; do
-    files="$files ${line@Q}"
-done <<< "$(/absolute/path/to/client/app.php c:g $key $value)"
-
-eval "eog $files"
-```
+[eog]: https://wiki.gnome.org/Apps/EyeOfGnome
