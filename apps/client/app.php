@@ -22,7 +22,6 @@ $cacheService = new CacheService($storageDir . '/cache.json');
 $application = new Application();
 
 $application->add(new AnnotationAddCommand($apiSdk, $cacheService));
-$application->add(new AnnotationGetCommand($apiSdk, $cacheService));
 $application->add(new AnnotationRemoveCommand($apiSdk, $cacheService));
 $application->add(new AnnotationSetCommand($apiSdk, $cacheService));
 $application->add(new ChecksumsByKeyAndValueCommand($apiSdk, $cacheService));

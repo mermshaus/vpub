@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace merms\anno\server;
 
+use merms\anno\server\model\Checksum;
+
 final class AnnotationService
 {
     private AnnotationStore $annotationStore;
@@ -13,7 +15,7 @@ final class AnnotationService
         $this->annotationStore = $annotationStore;
     }
 
-    public function findRecord(string $checksum): ?Record
+    public function findRecord(Checksum $checksum): ?Record
     {
         return $this->annotationStore->findRecord($checksum);
     }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace merms\anno\server;
 
+use merms\anno\server\model\Checksum;
+
 final class AnnotationFileStore implements AnnotationStore
 {
     private string $storageFilepath;
@@ -13,15 +15,17 @@ final class AnnotationFileStore implements AnnotationStore
         $this->storageFilepath = $storageFilepath;
     }
 
-    public function findRecord(string $checksum): ?Record
+    public function findRecord(Checksum $checksum): ?Record
     {
         $records = $this->readData();
 
-        if (!isset($records[$checksum])) {
-            return null;
+        foreach ($records as $record) {
+            if ($record['checksum'] === $checksum->toString()) {
+                return Record::createFromJsonArray($record);
+            }
         }
 
-        return Record::createFromJsonArray($checksum, $records[$checksum]);
+        return null;
     }
 
     /**
@@ -33,8 +37,8 @@ final class AnnotationFileStore implements AnnotationStore
 
         $ret = [];
 
-        foreach ($records as $key => $data) {
-            $ret[] = Record::createFromJsonArray($key, $data);
+        foreach ($records as $record) {
+            $ret[] = Record::createFromJsonArray($record);
         }
 
         return $ret;
@@ -43,7 +47,30 @@ final class AnnotationFileStore implements AnnotationStore
     public function saveRecord(Record $record): void
     {
         $data                         = $this->readData();
-        $data[$record->getChecksum()] = $record->toJsonArray();
+
+        $replaceRecord = false;
+        $replaceIdx = -1;
+
+        foreach ($data as $idx => $d) {
+            $r = Record::createFromJsonArray($d);
+
+            if ($r->getId()->equals($record->getId())) {
+                // Replace the existing record.
+                $replaceRecord= true;
+                $replaceIdx = $idx;
+                break;
+            }
+        }
+
+        if ($replaceRecord === true) {
+            $data[$replaceIdx] = $record->toJsonArray();
+        }
+
+        if ($replaceRecord === false) {
+            // Append new record.
+            $data[] = $record->toJsonArray();
+        }
+
         $this->writeData($data);
     }
 
@@ -58,6 +85,6 @@ final class AnnotationFileStore implements AnnotationStore
 
     private function writeData(array $data): void
     {
-        file_put_contents($this->storageFilepath, json_encode($data));
+        file_put_contents($this->storageFilepath, json_encode($data, JSON_PRETTY_PRINT));
     }
 }

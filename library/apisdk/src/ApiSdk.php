@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace merms\anno\apisdk;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 
 final class ApiSdk
 {
@@ -32,17 +35,6 @@ final class ApiSdk
         return json_decode($response->getBody()->getContents(), true);
     }
 
-    public function getAnnotations(string $sha256sum): array
-    {
-        $client = $this->getClient();
-
-        $bodyString = json_encode(['method' => 'annotations.get', 'parameters' => ['sha256sum' => $sha256sum]]);
-
-        $response = $client->request('GET', '/', ['body' => $bodyString]);
-
-        return json_decode($response->getBody()->getContents(), true);
-    }
-
     /**
      * @param mixed $value
      */
@@ -60,27 +52,23 @@ final class ApiSdk
         return json_decode($response->getBody()->getContents(), true);
     }
 
-    public function getRecord(string $sha256sum): array
+    public function getRecord(string $sha256sum): ?array
     {
         $client = $this->getClient();
 
         $bodyString = json_encode(['method' => 'record.get', 'parameters' => ['sha256sum' => $sha256sum]]);
 
-        $response = $client->request('GET', '/', ['body' => $bodyString]);
+        try {
+            $response = $client->request('GET', '/', ['body' => $bodyString]);
+        } catch (ClientException $exception) {
+            if ($exception->getResponse()->getStatusCode() === 404) {
+                return null;
+            }
+
+            throw $exception;
+        }
 
         return json_decode($response->getBody()->getContents(), true);
-    }
-
-    public function setAnnotations(string $sha256sum, array $annotations): void
-    {
-        $client = $this->getClient();
-
-        $bodyString = json_encode([
-            'method'     => 'annotations.set',
-            'parameters' => ['sha256sum' => $sha256sum, 'annotations' => $annotations],
-        ]);
-
-        $client->request('POST', '/', ['body' => $bodyString]);
     }
 
     private function getClient(): Client

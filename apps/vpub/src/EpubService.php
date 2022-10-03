@@ -12,7 +12,7 @@ final class EpubService
     {
         $finder = new Finder();
 
-        $finder->name('*.epub');
+        $finder->name(['*.epub', '*.pdf']);
 
         return iterator_to_array($finder->in($directory)->getIterator());
     }

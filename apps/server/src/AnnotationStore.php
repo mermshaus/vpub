@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace merms\anno\server;
 
+use merms\anno\server\model\Checksum;
+
 interface AnnotationStore
 {
-    public function findRecord(string $checksum): ?Record;
+    public function findRecord(Checksum $checksum): ?Record;
 
     /**
      * @return Record[]

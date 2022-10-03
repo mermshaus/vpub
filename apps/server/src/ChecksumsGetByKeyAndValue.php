@@ -6,27 +6,21 @@ namespace merms\anno\server;
 
 final class ChecksumsGetByKeyAndValue
 {
-    /**
-     * @param mixed $value
-     */
-    public function execute(string $key, $value): array
+    public function execute(string $key, string $value): array
     {
         $annotationService = new AnnotationService(new AnnotationFileStore('/home/marc/.local/share/vpub/data.json'));
 
         $records = $annotationService->findAllRecords();
 
         $recordsFiltered = array_filter($records, function (Record $record) use ($key, $value) {
-            if ($record->getData()->hasValue($key)) {
-                $entry = $record->getData()->getValue($key);
+            foreach ($record->getData()->getEntriesWithKey($key) as $entry) {
 
-                if (!is_array($entry)) {
-                    return $record->getData()->getValue($key) === $value;
+                if ($value==='*') {
+                    return true;
                 }
 
-                foreach ($entry as $entryValue) {
-                    if ($entryValue === $value) {
-                        return true;
-                    }
+                if ($value===$entry->getValue()) {
+                    return true;
                 }
             }
 
@@ -36,7 +30,7 @@ final class ChecksumsGetByKeyAndValue
         $arr = [];
 
         foreach ($recordsFiltered as $record) {
-            $arr[$record->getChecksum()] = $record->toJsonArray();
+            $arr[$record->getChecksum()->toString()] = $record->toJsonArray();
         }
 
         return $arr;

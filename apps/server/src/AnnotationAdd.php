@@ -4,42 +4,32 @@ declare(strict_types=1);
 
 namespace merms\anno\server;
 
+use merms\anno\server\model\Checksum;
+
 final class AnnotationAdd
 {
-    public function execute(string $sha256sum, string $key, string $value): Record
+    public function execute(Checksum $sha256sum, string $key, string $value): Record
     {
         $annotationService = new AnnotationService(new AnnotationFileStore('/home/marc/.local/share/vpub/data.json'));
 
         $record = $annotationService->findRecord($sha256sum);
 
+        $createdAt = TimeService::getMicrotime();
+        $modifiedAt = $createdAt;
+
+        $newRecordDataEntry = new RecordDataEntry(IdService::generate(),$createdAt, $modifiedAt,$key, $value);
+
         if ($record === null) {
-            $record = new Record($sha256sum, new RecordData([$key => [$value]]));
-            $annotationService->saveRecord($record);
+            $uuid = IdService::generate();
+            $entries = [$newRecordDataEntry];
 
-            return $record;
+            $newRecord = new Record($uuid, $createdAt, $sha256sum, new RecordData($entries));
+        } else {
+            $newRecord = $record->withAdditionalEntry($newRecordDataEntry);
         }
 
-        $data = $record->getData();
+        $annotationService->saveRecord($newRecord);
 
-        if ($data->hasValue($key)) {
-            $existingValue = $data->getValue($key);
-
-            if (!is_array($existingValue)) {
-                $existingValue = [$existingValue];
-            }
-
-            $existingValue[] = $value;
-
-            $data->setValue($key, $existingValue);
-
-            $annotationService->saveRecord($record);
-
-            return $record;
-        }
-
-        $data->setValue($key, [$value]);
-        $annotationService->saveRecord($record);
-
-        return $record;
+        return $newRecord;
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace merms\anno\server;
 
+use merms\anno\server\model\Checksum;
+use Symfony\Component\HttpFoundation\Response;
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
@@ -45,28 +48,14 @@ switch ($routeInfo[0]) {
 
         file_put_contents('php://stdout', sprintf('Request received: %s', $entityBody));
 
-        if ($data['method'] === 'annotations.get') {
-            if ($httpMethod !== 'GET') {
-                throw new \RuntimeException('GET request expected');
-            }
-
-            $class = new AnnotationsGet();
-            echo json_encode($class->execute($data['parameters']['sha256sum']));
-        } elseif ($data['method'] === 'annotations.set') {
-            if ($httpMethod !== 'POST') {
-                throw new \RuntimeException('POST request expected');
-            }
-
-            $class = new AnnotationsSet();
-            $class->execute($data['parameters']['sha256sum'], $data['parameters']['annotations']);
-        } elseif ($data['method'] === 'annotation.add') {
+        if ($data['method'] === 'annotation.add') {
             if ($httpMethod !== 'POST') {
                 throw new \RuntimeException('POST request expected');
             }
 
             $class  = new AnnotationAdd();
             $record = $class->execute(
-                $data['parameters']['sha256sum'],
+                new Checksum($data['parameters']['sha256sum']),
                 $data['parameters']['key'],
                 $data['parameters']['value'],
             );
@@ -85,9 +74,23 @@ switch ($routeInfo[0]) {
             }
 
             $class  = new RecordGet();
-            $record = $class->execute($data['parameters']['sha256sum']);
+            $record = $class->execute(new Checksum($data['parameters']['sha256sum']));
 
-            echo json_encode($record->toJsonArray());
+            if ($record === null) {
+                $response = new Response(
+                    '404',
+                    Response::HTTP_NOT_FOUND,
+                    ['content-type' => 'application/json']
+                );
+            } else {
+                $response = new Response(
+                    json_encode($record->toJsonArray()),
+                    Response::HTTP_OK,
+                    ['content-type' => 'application/json']
+                );
+            }
+
+            $response->send();
         }
 
         // ... call $handler with $vars

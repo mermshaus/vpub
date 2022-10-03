@@ -6,6 +6,7 @@ namespace merms\vpub;
 
 use merms\anno\apisdk\ApiSdk;
 use merms\anno\checksum_cache\CacheService;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -50,42 +51,68 @@ final class EpubListCommand extends Command
 
             $checksum = $this->cacheService->getSha256Sum($filepath);
 
-            $annotations = $this->apiSdk->getAnnotations($checksum);
+            $record = $this->apiSdk->getRecord($checksum);
 
-            if (count($annotations) === 0) {
+            if ($record === null) {
                 $output->writeln(sprintf('(no metadata) %s', $filename));
 
                 continue;
             }
 
-            $entries[] = $this->formatEntry($annotations);
+            $entries[] = $this->formatEntry($record['data'], $filepath);
         }
 
-        sort($entries);
+        usort($entries, function ($a, $b) {
+            return strcasecmp($a['title'], $b['title']);
+        });
 
+
+        $n = 1;
         foreach ($entries as $entry) {
-            $output->writeln($entry);
+            $output->writeln($n . ') ' . $entry['title']);
+            $output->writeln(str_repeat(' ', 8) . 'by ' . $entry['author']);
+            //$output->writeln(str_repeat(' ', 8) . $entry['filepath']);
+            $output->writeln('');
+            $n++;
         }
 
         return Command::SUCCESS;
     }
 
-    private function formatEntry(array $annotations): string
+    private function formatEntry(array $annotations, string $filepath): array
     {
-        $ret = '';
+        $annotationAuthor = 'No author';
 
-        $annotationAuthor = isset($annotations['epub.author']) ? $annotations['epub.author'] : 'No author';
-        $annotationTitle  = isset($annotations['epub.title']) ? $annotations['epub.title'] : 'No title';
+        $values = $this->getValuesByKey($annotations, 'epub.author');
 
-        $ret .= sprintf('%s: %s', $annotationAuthor, $annotationTitle);
-
-        if (isset($annotations['epub.series'])) {
-            $annotationSeries = isset($annotations['epub.series']) ? $annotations['epub.series'] : 'No series';
-            $annotationNumber = isset($annotations['epub.number']) ? $annotations['epub.number'] : 'No number';
-
-            $ret .= sprintf(' (%s, #%s)', $annotationSeries, $annotationNumber);
+        if (count($values)>0) {
+            $annotationAuthor = implode(', ', $values);
         }
 
-        return $ret;
+        $annotationTitle  = 'No title';
+
+        $values = $this->getValuesByKey($annotations, 'epub.title');
+
+        if (count($values)===1) {
+            $annotationTitle = $values[0];
+        } elseif (count($values) > 1) {
+            throw new RuntimeException('More than one title found');
+        }
+
+        return ['author' => $annotationAuthor, 'title'=>$annotationTitle, 'filepath' => $filepath];
+    }
+
+    private function getValuesByKey(array $annotations, string $key): array {
+        $values = [];
+
+        foreach ($annotations as $annotation) {
+            if ($annotation['key'] !== $key) {
+                continue;
+            }
+
+            $values[] = $annotation['value'];
+        }
+
+        return $values;
     }
 }
